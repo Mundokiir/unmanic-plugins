@@ -5,7 +5,7 @@
     ],
     "description": "Notify Radarr on movie update to rescan modified file.",
     "icon": "https://raw.githubusercontent.com/Josh5/unmanic.plugin.notify_radarr/master/icon.png",
-    "id": "notify_radarr",
+    "id": "mundokiir_notify_radarr",
     "name": "Notify Radarr",
     "priorities": {
         "on_postprocessor_task_results": 0
