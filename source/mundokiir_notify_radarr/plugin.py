@@ -24,6 +24,7 @@
 import logging
 import os
 import pprint
+import time
 
 import humanfriendly
 from pyarr import RadarrAPI
@@ -31,7 +32,6 @@ from pyarr.exceptions import (
     PyarrAccessRestricted,
     PyarrBadGateway,
     PyarrConnectionError,
-    PyarrMethodNotAllowed,
     PyarrResourceNotFound,
     PyarrUnauthorizedError,
 )
@@ -141,7 +141,8 @@ def update_mode(api, abspath, rename_files):
         #   - RefreshMovie with a movie ID
         # return on error to ensure rename function is not executed
         result = api.post_command('RefreshMovie', movieIds=[movie_id])
-        logger.debug("Received result:\n%s", movie_title)
+        logger.debug("Received result:\n%s", str(result))
+
         if result.get('message'):
             logger.error("Failed to queue refresh of movie ID '%s' for file: '%s'", movie_id, abspath)
             logger.error("Response from radarr: %s", result['message'])
@@ -164,19 +165,16 @@ def update_mode(api, abspath, rename_files):
         logger.error("Failed to queue refresh of movie '%s' for file: '%s'", movie_title, abspath)
         logger.error("Bad Gateway. Check your server is accessible")
         return
-    except PyarrMethodNotAllowed:
-        logger.error("Failed to queue refresh of movie '%s' for file: '%s'", movie_title, abspath)
-        logger.error("The POST method is not allowed at this endpoint.")
-        return
     except PyarrConnectionError:
         logger.error("Failed to queue refresh of movie '%s' for file: '%s'", movie_title, abspath)
         logger.error("Timeout connecting to radarr. Check your server is accessible")
         return
 
     if rename_files:
+        time.sleep(3) # Must give time for the refresh to complete before we run the rename.
         try:
             result = api.post_command('RenameMovie', movieIds=[movie_id])
-            logger.debug(result)
+            logger.debug("Received result for 'RenameMovie' command:\n%s", result)
             if isinstance(result, dict):
                 logger.info("Successfully triggered rename of movie '%s' for file: '%s'", movie_title, abspath)
             else:
@@ -193,9 +191,6 @@ def update_mode(api, abspath, rename_files):
         except PyarrBadGateway:
             logger.error("Failed to trigger rename of movie '%s' for file: '%s'", movie_title, abspath)
             logger.error("Bad Gateway. Check your server is accessible")
-        except PyarrMethodNotAllowed:
-            logger.error("Failed to trigger rename of movie '%s' for file: '%s'", movie_title, abspath)
-            logger.error("The POST method is not allowed at this endpoint")
         except PyarrConnectionError:
             logger.error("Failed to trigger rename of movie '%s' for file: '%s'", movie_title, abspath)
             logger.error("Timeout connecting to radarr. Check your server is accessible")
