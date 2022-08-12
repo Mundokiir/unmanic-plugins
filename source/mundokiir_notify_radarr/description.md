@@ -1,27 +1,27 @@
 
-# Config description:
+## Config description:
 
 
-## <span style="color:blue">Radarr LAN IP Address</span>
+### <span style="color:blue">Radarr LAN IP Address</span>
 The protocol and IP address of the Radarr application
 
 
-## <span style="color:blue">Radarr API Key</span>
+### <span style="color:blue">Radarr API Key</span>
 Radarr application API key
 
 
-## <span style="color:blue">Mode</span>
+### <span style="color:blue">Mode</span>
 
-### Trigger movie refresh on task complete
+#### Trigger movie refresh on task complete
 Use this mode when you wish to simply trigger a refresh on a movie to re-read a modified file after Unmanic has 
 processed it.
 
-##### Trigger Radarr file renaming
+###### Trigger Radarr file renaming
 Only available if the *Trigger movie refresh on task complete* mode is selected.
 
 Trigger Radarr to re-name files according to the defined naming scheme. Useful if you've changed encodings and have these encodings in your name templates.
 
-### Import movie on task complete
+#### Import movie on task complete
 Use this mode when you are running Unmanic prior to importing a file into Radarr. 
 This will trigger a download import.
 
@@ -38,13 +38,13 @@ download especially with file monitor enabled.
 
 <br>
 
-##### Limit file import size
+###### Limit file import size
 Only available if the *Import movie on task complete* mode is selected.
 
 Enable limiting the Radarr notification on items over the value specified in the *Minimum file size* option.
 
 
-##### Minimum file size
+###### Minimum file size
 Only available if the *Import movie on task complete* mode, and the *Limit file import size* 
 box is selected.
 
