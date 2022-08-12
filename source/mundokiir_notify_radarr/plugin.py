@@ -118,6 +118,7 @@ def update_mode(api, abspath, rename_files):
 
     # Run lookup search to fetch movie data and ID for rescan
     lookup_results = api.lookup_movie(str(basename))
+    logger.debug("lookup results: %s", str(lookup_results))
 
     # Loop over search results and just use the first result (best thing I can think of)
     movie_data = {}
@@ -128,16 +129,19 @@ def update_mode(api, abspath, rename_files):
 
     # Parse movie data
     movie_title = movie_data.get('title')
+    logger.debug("Detected movie title: %s", movie_title)
     movie_id = movie_data.get('id')
     if not movie_id:
         logger.error("Missing movie ID. Failed to queue refresh of movie for file: '%s'", abspath)
         return
+    logger.debug("Detected movie ID: %s", movie_id)
 
     try:
         # Run API command for RefreshMovie
         #   - RefreshMovie with a movie ID
         # return on error to ensure rename function is not executed
         result = api.post_command('RefreshMovie', movieIds=[movie_id])
+        logger.debug("Received result:\n%s", movie_title)
         if result.get('message'):
             logger.error("Failed to queue refresh of movie ID '%s' for file: '%s'", movie_id, abspath)
             logger.error("Response from radarr: %s", result['message'])
@@ -172,6 +176,7 @@ def update_mode(api, abspath, rename_files):
     if rename_files:
         try:
             result = api.post_command('RenameMovie', movieIds=[movie_id])
+            logger.debug(result)
             if isinstance(result, dict):
                 logger.info("Successfully triggered rename of movie '%s' for file: '%s'", movie_title, abspath)
             else:
