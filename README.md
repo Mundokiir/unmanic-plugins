@@ -1,11 +1,11 @@
-# Unmanic Plugins by <!-- your name here -->
+# Unmanic Plugins by Mundokiir
 
 ## Instructions
 
 ### Repo URL:
 <!-- Replace the below link with your own repo URL (found in the 'repo' git branch) -->
 ```
-https://raw.githubusercontent.com/Unmanic/unmanic-plugins/repo/repo.json
+https://raw.githubusercontent.com/Mundokiir/unmanic-plugins/repo/repo.json
 ```
 
 
@@ -25,7 +25,7 @@ to add this repo to your Unmanic installation.
 
 This projected is licensed under th GPL version 3. 
 
-Copyright (C) 2021 Josh Sunnex - All Rights Reserved
+Copyright (C) 2021 Robert Gonzalez - All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
