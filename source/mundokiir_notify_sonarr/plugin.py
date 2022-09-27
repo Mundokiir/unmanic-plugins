@@ -160,7 +160,7 @@ def update_mode(api, dest_path, rename_files):
         return
 
     if rename_files:
-        time.sleep(10) # Must give time for the refresh to complete before we run the rename.
+        time.sleep(30) # Must give time for the refresh to complete before we run the rename.
         try:
             result = api.post_command('RenameSeries', seriesId=series_id)
             logger.debug("Received result for 'RenameSeries' command:\n%s", result)
