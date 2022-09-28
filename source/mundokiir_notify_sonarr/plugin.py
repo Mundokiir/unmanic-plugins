@@ -25,8 +25,10 @@ import logging
 import os
 import pprint
 import time
+from urllib import request, response
 
 import humanfriendly
+import requests
 from pyarr import SonarrAPI
 from pyarr.exceptions import (
     PyarrAccessRestricted,
@@ -112,12 +114,12 @@ def check_file_size_under_max_file_size(path, minimum_file_size):
     return True
 
 
-def update_mode(api, dest_path, rename_files):
+def update_mode(api, dest_path, rename_files, host_url):
     basename = os.path.basename(dest_path)
 
     # Fetch episode data
     episode_data = api.get_parsed_title(basename)
-    logger.debug("lookup results: %s", str(episode_data))
+    logger.info("lookup results: %s", str(episode_data))
 
     # Fetch a series ID from Sonarr
     series_title = episode_data.get('series', {}).get('title')
@@ -160,9 +162,19 @@ def update_mode(api, dest_path, rename_files):
         return
 
     if rename_files:
-        time.sleep(30) # Must give time for the refresh to complete before we run the rename.
+        time.sleep(10) # Must give time for the refresh to complete before we run the rename.
         try:
-            result = api.post_command('RenameSeries', seriesId=series_id)
+            r = requests.get(f"{host_url}/api/v3/rename?seriesId={series_id}")
+            resp = r.json()
+        except:
+            logger.error("Failed to trigger rename of series ID '%s' for file: '%s'", series_id, dest_path)
+            logger.error("Received unexpected response from Sonarr API: '%s'", r.text)
+            return
+        file_ids = []
+        for episode in resp:
+            file_ids.append(episode['episodeFileId'])
+        try:
+            result = api.post_command('RenameFiles', seriesId=series_id, files=file_ids)
             logger.debug("Received result for 'RenameSeries' command:\n%s", result)
             if isinstance(result, dict):
                 logger.info("Successfully triggered rename of series '%s' for file: '%s'", series_title, dest_path)
@@ -235,7 +247,7 @@ def process_files(settings, source_file, destination_files, host_url, api_key):
     # Get the basename of the file
     for dest_file in destination_files:
         if mode == 'update_mode':
-            update_mode(api, dest_file, rename_files)
+            update_mode(api, dest_file, rename_files, host_url)
         elif mode == 'import_mode':
             minimum_file_size = settings.get_setting('minimum_file_size')
             if check_file_size_under_max_file_size(dest_file, minimum_file_size):
