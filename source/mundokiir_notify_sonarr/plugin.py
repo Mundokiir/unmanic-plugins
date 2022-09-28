@@ -25,10 +25,8 @@ import logging
 import os
 import pprint
 import time
-from urllib import request, response
 
 import humanfriendly
-import requests
 from pyarr import SonarrAPI
 from pyarr.exceptions import (
     PyarrAccessRestricted,
@@ -114,7 +112,7 @@ def check_file_size_under_max_file_size(path, minimum_file_size):
     return True
 
 
-def update_mode(api, dest_path, rename_files, host_url):
+def update_mode(api, dest_path, rename_files):
     basename = os.path.basename(dest_path)
 
     # Fetch episode data
@@ -123,37 +121,35 @@ def update_mode(api, dest_path, rename_files, host_url):
 
     # Fetch a series ID from Sonarr
     series_title = episode_data.get('series', {}).get('title')
-    logger.debug("Detected series title: %s", series_title)
     series_id = episode_data.get('series', {}).get('id')
     if not series_id:
         logger.error("Missing series ID. Failed to queued refresh of series for file: '%s'", dest_path)
         return
-    logger.debug("Detected series ID: %s", series_id)
 
     try:
         # Run API command for RescanSeries
         #   - RescanSeries with a series ID
         result = api.post_command('RescanSeries', seriesId=series_id)
         if result.get('message'):
-            logger.error("Failed to queued refresh of series ID '%s' for file: '%s'", series_id, dest_path)
+            logger.error("Failed to queue refresh of series ID '%s' for file: '%s'", series_id, dest_path)
             logger.error("Response from sonarr: %s", result['message'])
             return
         else:
-            logger.info("Successfully queued refreshed the Series '%s' for file: '%s'", series_id, dest_path)
+            logger.info("Successfully queued refresh of the Series '%s' for file: '%s'", series_id, dest_path)
     except PyarrUnauthorizedError:
-        logger.error("Failed to queued refresh of series ID '%s' for file: '%s'", series_id, dest_path)
+        logger.error("Failed to queue refresh of series ID '%s' for file: '%s'", series_id, dest_path)
         logger.error("Unauthorized. Please ensure valid API Key is used.")
         return
     except PyarrAccessRestricted:
-        logger.error("Failed to queued refresh of series ID '%s' for file: '%s'", series_id, dest_path)
+        logger.error("Failed to queue refresh of series ID '%s' for file: '%s'", series_id, dest_path)
         logger.error("Access restricted. Please ensure API Key has correct permissions")
         return
     except PyarrResourceNotFound:
-        logger.error("Failed to queued refresh of series ID '%s' for file: '%s'", series_id, dest_path)
+        logger.error("Failed to queue refresh of series ID '%s' for file: '%s'", series_id, dest_path)
         logger.error("Resource not found")
         return
     except PyarrBadGateway:
-        logger.error("Failed to queued refresh of series ID '%s' for file: '%s'", series_id, dest_path)
+        logger.error("Failed to queue refresh of series ID '%s' for file: '%s'", series_id, dest_path)
         logger.error("Bad Gateway. Check your server is accessible")
         return
     except PyarrConnectionError:
@@ -162,21 +158,13 @@ def update_mode(api, dest_path, rename_files, host_url):
         return
 
     if rename_files:
-        time.sleep(10) # Must give time for the refresh to complete before we run the rename.
+        time.sleep(10) # Must give time (more than Radarr) for the refresh to complete before we run the rename.
         try:
-            resp = api.request_get("rename", "", params={"seriesId": {series_id}})
-            # r = requests.get(f"{host_url}/api/v3/rename?seriesId={series_id}")
-            # resp = r.json()
-        except:
-            logger.error("Failed to trigger rename of series ID '%s' for file: '%s'", series_id, dest_path)
-            return
-        logger.info("Received thing:\n%s", str(resp))
-        file_ids = []
-        for episode in resp:
-            file_ids.append(episode['episodeFileId'])
-        try:
+            # Bulk series rename is broken, so instead simulate the UI API call workflow.
+            rename_list = api.request_get("rename", "", params={"seriesId": {series_id}})
+            file_ids = [episode['episodeFileId'] for episode in rename_list]
+
             result = api.post_command('RenameFiles', seriesId=series_id, files=file_ids)
-            logger.debug("Received result for 'RenameSeries' command:\n%s", result)
             if isinstance(result, dict):
                 logger.info("Successfully triggered rename of series '%s' for file: '%s'", series_title, dest_path)
             else:
@@ -196,6 +184,8 @@ def update_mode(api, dest_path, rename_files, host_url):
         except PyarrConnectionError:
             logger.error("Failed to trigger rename of series '%s' for file: '%s'", series_title, dest_path)
             logger.error("Timeout connecting to sonarr. Check your server is accessible")
+        except BaseException as err:
+            logger.error("Failed to trigger rename of series ID '%s' for file: '%s'\nError received: %s", series_id, dest_path, str(err))
 
 
 def import_mode(api, source_path, dest_path):
@@ -248,7 +238,7 @@ def process_files(settings, source_file, destination_files, host_url, api_key):
     # Get the basename of the file
     for dest_file in destination_files:
         if mode == 'update_mode':
-            update_mode(api, dest_file, rename_files, host_url)
+            update_mode(api, dest_file, rename_files)
         elif mode == 'import_mode':
             minimum_file_size = settings.get_setting('minimum_file_size')
             if check_file_size_under_max_file_size(dest_file, minimum_file_size):
