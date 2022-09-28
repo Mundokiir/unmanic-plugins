@@ -117,7 +117,6 @@ def update_mode(api, dest_path, rename_files):
 
     # Fetch episode data
     episode_data = api.get_parsed_title(basename)
-    logger.info("lookup results: %s", str(episode_data))
 
     # Fetch a series ID from Sonarr
     series_title = episode_data.get('series', {}).get('title')
