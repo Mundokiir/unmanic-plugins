@@ -1,0 +1,41 @@
+{
+    "repo": {
+        "id": "repository.Mundokiir",
+        "name": "Mundokiir Test Repo",
+        "icon": "",
+        "repo_data_directory": "https://raw.githubusercontent.com/Mundokiir/unmanic-plugins/repo/",
+        "repo_data_url": "https://raw.githubusercontent.com/Mundokiir/unmanic-plugins/repo/repo.json"
+    },
+    "plugins": [
+        {
+            "author": "Cpt.Chaz,Josh.5",
+            "compatibility": [
+                2
+            ],
+            "description": "Notify Sonarr on series update to rescan modified file.",
+            "icon": "https://raw.githubusercontent.com/Josh5/unmanic.plugin.notify_sonarr/master/icon.png",
+            "id": "mundokiir_notify_sonarr",
+            "name": "Notify Sonarr",
+            "priorities": {
+                "on_postprocessor_task_results": 0
+            },
+            "tags": "sonarr",
+            "version": "0.0.4"
+        },
+        {
+            "author": "Cpt.Chaz,Josh.5",
+            "compatibility": [
+                2
+            ],
+            "description": "Notify Radarr on movie update to rescan modified file.",
+            "icon": "https://raw.githubusercontent.com/Josh5/unmanic.plugin.notify_radarr/master/icon.png",
+            "id": "mundokiir_notify_radarr",
+            "name": "Notify Radarr",
+            "priorities": {
+                "on_postprocessor_task_results": 0
+            },
+            "tags": "radarr",
+            "version": "0.0.4"
+        }
+    ]
+}
