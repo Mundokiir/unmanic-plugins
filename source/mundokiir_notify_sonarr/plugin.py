@@ -164,13 +164,13 @@ def update_mode(api, dest_path, rename_files, host_url):
     if rename_files:
         time.sleep(10) # Must give time for the refresh to complete before we run the rename.
         try:
-            r = requests.get(f"{host_url}/api/v3/rename?seriesId={series_id}")
-            resp = r.json()
+            resp = api.request_get("rename", "", params={"seriesId": {series_id}})
+            # r = requests.get(f"{host_url}/api/v3/rename?seriesId={series_id}")
+            # resp = r.json()
         except:
             logger.error("Failed to trigger rename of series ID '%s' for file: '%s'", series_id, dest_path)
-            logger.error("Received unexpected response from Sonarr API: '%s'", r.text)
             return
-        logger.info("Recieved thing:\n%s", str(resp))
+        logger.info("Received thing:\n%s", str(resp))
         file_ids = []
         for episode in resp:
             file_ids.append(episode['episodeFileId'])
