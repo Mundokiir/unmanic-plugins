@@ -170,6 +170,7 @@ def update_mode(api, dest_path, rename_files, host_url):
             logger.error("Failed to trigger rename of series ID '%s' for file: '%s'", series_id, dest_path)
             logger.error("Received unexpected response from Sonarr API: '%s'", r.text)
             return
+        logger.info("Recieved thing:\n%s", str(resp))
         file_ids = []
         for episode in resp:
             file_ids.append(episode['episodeFileId'])
